@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node ./server/webserver.js"
+    "start": "NODE_ENV=prod node ./server/webserver.js",
+    "dev": "NODE_ENV=test node ./server/webserver.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

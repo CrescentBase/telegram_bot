@@ -5,7 +5,7 @@ import util from "util";
 import BigNumber from 'bignumber.js'
 
 // replace the value below with the Telegram token you receive from @BotFather
-const token = '6237078898:AAGbtiaaa2j65ntR8ft6e00wrk0GTx6_Xo4';
+const token = process.env.NODE_ENV === 'prod' ? '6237078898:AAGbtiaaa2j65ntR8ft6e00wrk0GTx6_Xo4' : '5989728913:AAH9nq1jCSGmFt6uOZ5fzOUSIA0NmEDBimU';
 
 const settings_url = 'https://tg.crescentbase.com/index.html';
 
@@ -58,7 +58,8 @@ export function loadBot() {
                 ]
             })
         };
-        bot.sendMessage(chatId, isZh ? `<a href=\'https://crescentbase.com\'>Crescent钱包</a>是一款支持ERP4337标准，免私钥助记词的智能合约钱包。除发送、接收、法币入金外、还支持邮箱绑定。` : `<a href='https://crescentbase.com'>Crescent Wallet</a> is a keyless, smart contract wallet that supports the ERP4337 standard. In addition to sending, receiving, fiat deposits, it also supports email binding.`, options);
+        //isZh ? `<a href=\'https://crescentbase.com\'>Crescent钱包</a>是一款支持ERP4337标准，免私钥助记词的智能合约钱包。除发送、接收、法币入金外、还支持邮箱绑定。` : `<a href='https://crescentbase.com'>Crescent Wallet</a> is a keyless, smart contract wallet that supports the ERP4337 standard. In addition to sending, receiving, fiat deposits, it also supports email binding.`
+        bot.sendMessage(chatId, 'Your next-gen TG wallet', options);
     });
 
 
@@ -132,6 +133,15 @@ export function loadBot() {
 
     // bot.getWebHookInfo().then(result => console.log('getWebHookInfo', result))
     bot.getMyCommands().then(result => console.log('getMyCommands', result));
+    bot.getMe().then(result => console.log('getMe', result));
+
+    // const opts = [
+    //     { command: 'menu', description: 'Main Menu' },
+    //     { command: 'wallet', description: 'My Wallet' },
+    //     { command: 'deposit', description: 'Fiat Deposits' },
+    //     { command: 'settings', description: 'Settings' }
+    // ];
+    // bot.setMyCommands(opts).then(resp => console.assert(resp));
 
     return bot;
 }
@@ -161,11 +171,3 @@ const showWallet = (bot, chatId, name, isZh) => {
         .catch(e => { console.error("showWallet fetch", util.inspect(e))});
 }
 
-
-// const opts = [
-//     { command: 'menu', description: 'Main Menu' },
-//     { command: 'wallet', description: 'My Wallet' },
-//     { command: 'deposit', description: 'Fiat Deposits' },
-//     { command: 'settings', description: 'Settings' }
-// ];
-// bot.setMyCommands(opts).then(resp => console.assert(resp));

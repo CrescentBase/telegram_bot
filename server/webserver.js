@@ -16,7 +16,7 @@ app.use(cors({
 }));
 app.use('/bot', queryRouter);
 
-const port = process.env.Port || 9001
+const port = process.env.NODE_ENV === 'prod' ? 9001 : 9002;
 
 let mainFunc = async () => {
     loadBot();
