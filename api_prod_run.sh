@@ -1,1 +1,1 @@
-pm2 restart api_pm2.json --env prod
+pm2 restart api_pm2.json --only telegram_bot
