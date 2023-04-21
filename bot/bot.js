@@ -117,8 +117,12 @@ export function loadBot() {
         }
         console.log("callbackQuery", callbackQuery);
         if (action === 'show_wallet') {
-            showWallet(bot, msg.chat.id, name, isZh);
+            showWallet(bot, msg.chat.id, name, isZh).then(result => {
+                bot.answerCallbackQuery(callbackQuery.id);
+            });
+            return;
         }
+        bot.answerCallbackQuery(callbackQuery.id);
     });
 
     bot.onText(/\/wallet/, (msg, match) => {
@@ -174,27 +178,36 @@ export function loadBot() {
 }
 
 
-const showWallet = (bot, chatId, name, isZh) => {
-    timeoutFetch(`https://wallet.crescentbase.com/api/v2/getAAddress?email=@TG@${chatId}`)
-        .then(result => {
-            if (result.ret === 200 && result.data) {
-                console.log(result.data);
-                timeoutFetch(`https://controller.crescentbase.com/api/v1/getTotalBalances?address=${result.data}`).then(response => {
-                    if (response.ret === 200 && response.data) {
-                        console.log(response.data);
-                        const balances = new BigNumber(response.data, 10);
-                        const text = `<strong>${name}</strong>\n${isZh? '地址：' : 'Address: '}${result.data}\n${isZh? '总金额：' : 'Total Balances: '}${balances.isNaN() ? "0" : balances.dp(2).toString(10)} USD`;
-                        bot.sendMessage(chatId, text, { parse_mode: "HTML", }).then(end => {
-                            console.log("showWallet end", end);
-                        });
-                    } else {
-                        console.log("showWallet fetch getTotalBalances fail", response);
-                    }
-                })
-            } else {
-                console.log("showWallet fetch fail", result);
-            }
-        })
-        .catch(e => { console.error("showWallet fetch", util.inspect(e))});
+const showWallet = async (bot, chatId, name, isZh) => {
+    await new Promise(resolve => {
+        timeoutFetch(`https://wallet.crescentbase.com/api/v2/getAAddress?email=@TG@${chatId}`)
+            .then(result => {
+                if (result.ret === 200 && result.data) {
+                    console.log(result.data);
+                    timeoutFetch(`https://controller.crescentbase.com/api/v1/getTotalBalances?address=${result.data}`).then(response => {
+                        if (response.ret === 200 && response.data) {
+                            console.log(response.data);
+                            const balances = new BigNumber(response.data, 10);
+                            const text = `<strong>${name}</strong>\n${isZh? '地址：' : 'Address: '}${result.data}\n${isZh? '总金额：' : 'Total Balances: '}${balances.isNaN() ? "0" : balances.dp(2).toString(10)} USD`;
+                            bot.sendMessage(chatId, text, { parse_mode: "HTML", }).then(end => {
+                                console.log("showWallet end", end);
+                                resolve();
+                            });
+                        } else {
+                            console.log("showWallet fetch getTotalBalances fail", response);
+                            resolve();
+                        }
+                    })
+                } else {
+                    console.log("showWallet fetch fail", result);
+                    resolve();
+                }
+            })
+            .catch(e => {
+                console.error("showWallet fetch", util.inspect(e));
+                resolve();
+            });
+    });
+
 }
 
