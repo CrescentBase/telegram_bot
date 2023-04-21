@@ -15,7 +15,7 @@ const delete_wallet_url = 'https://tg.crescentbase.com/index.html?type=delete';
 
 const deposits_url = 'https://global.transak.com/?apiKey=2bd8015d-d8e6-4972-bcca-22770dcbe595';
 
-const support_url = 'https://t.me/CrescentWallet_SupportBot';
+const support_url = 'https://t.me/CrescentSupportService';
 
 
 export function loadBot() {
@@ -111,7 +111,10 @@ export function loadBot() {
         const action = callbackQuery.data;
         const msg = callbackQuery.message;
         const isZh = callbackQuery.from.language_code === 'zh-hans';
-        const name = `${msg.chat.first_name} ${msg.chat.last_name}`;
+        let name = `${msg.chat.first_name}`;
+        if (msg.chat.last_name) {
+            name = `${name} ${msg.chat.last_name}`;
+        }
         console.log("callbackQuery", callbackQuery);
         if (action === 'show_wallet') {
             showWallet(bot, msg.chat.id, name, isZh);
@@ -126,7 +129,10 @@ export function loadBot() {
         // console.log("onText msg", msg);
         const chatId = msg.chat.id;
         const isZh = msg.from.language_code === 'zh-hans';
-        const name = `${msg.chat.first_name} ${msg.chat.last_name}`;
+        let name = `${msg.chat.first_name}`;
+        if (msg.chat.last_name) {
+            name = `${name} ${msg.chat.last_name}`;
+        }
         // const resp = match[1]; // the captured "whatever"
         console.log("wallet", msg);
         showWallet(bot, chatId, name, isZh);
