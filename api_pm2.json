@@ -1,6 +1,6 @@
 {
-  "name": "CrescentControllerServer",
-  "script": "apiserver/webserver.js",
+  "name": "telegram_bot",
+  "script": "server/webserver.js",
   "merge_logs": false,
   "log_date_format": "YYYY-MM-DD HH:mm Z"
 }
