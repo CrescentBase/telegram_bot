@@ -3,6 +3,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import {timeoutFetch} from "../utils/FatchUtils.js";
 import util from "util";
 import BigNumber from 'bignumber.js'
+import {response} from "express";
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.NODE_ENV === 'prod' ? '6237078898:AAGbtiaaa2j65ntR8ft6e00wrk0GTx6_Xo4' : '5989728913:AAH9nq1jCSGmFt6uOZ5fzOUSIA0NmEDBimU';
@@ -27,7 +28,7 @@ export function loadBot() {
         // 'match' is the result of executing the regexp above on the text content
         // of the message
 
-        console.log("onText msg", msg);
+        console.log("start msg", msg);
         const chatId = msg.chat.id;
 
         //menu_button: JSON.stringify({ type: 'web_app', text: 'Hello', web_app: { url: 'https://webappcontent.telegram.org/cafe' } }),
@@ -45,7 +46,7 @@ export function loadBot() {
         // 'match' is the result of executing the regexp above on the text content
         // of the message
 
-        console.log("onText msg", msg);
+        console.log("menu msg", msg);
         const chatId = msg.chat.id;
         const isZh = msg.from.language_code === 'zh-hans';
         // const resp = match[1]; // the captured "whatever"
@@ -110,14 +111,19 @@ export function loadBot() {
     bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         const action = callbackQuery.data;
         const msg = callbackQuery.message;
-        const isZh = callbackQuery.from.language_code === 'zh-hans';
-        let name = `${msg.chat.first_name}`;
-        if (msg.chat.last_name) {
-            name = `${name} ${msg.chat.last_name}`;
+        const from = callbackQuery.from;
+
+        const chatId = msg.chat.id;
+
+        const isZh = from.language_code === 'zh-hans';
+        const fromId = from.id;
+        let name = `${from.first_name}`;
+        if (from.last_name) {
+            name = `${name} ${from.last_name}`;
         }
         console.log("callbackQuery", callbackQuery);
         if (action === 'show_wallet') {
-            showWallet(bot, msg.chat.id, name, isZh).then(result => {
+            showWallet(bot, chatId, fromId, name, isZh).then(result => {
                 bot.answerCallbackQuery(callbackQuery.id);
             });
             return;
@@ -132,14 +138,36 @@ export function loadBot() {
 
         // console.log("onText msg", msg);
         const chatId = msg.chat.id;
+        const fromId = msg.from.id;
         const isZh = msg.from.language_code === 'zh-hans';
-        let name = `${msg.chat.first_name}`;
-        if (msg.chat.last_name) {
-            name = `${name} ${msg.chat.last_name}`;
+        let name = `${msg.from.first_name}`;
+        if (msg.from.last_name) {
+            name = `${name} ${msg.from.last_name}`;
         }
         // const resp = match[1]; // the captured "whatever"
         console.log("wallet", msg);
-        showWallet(bot, chatId, name, isZh);
+        showWallet(bot, chatId, fromId, name, isZh);
+    });
+
+    bot.onText(/\/openwallet/, (msg, match) => {
+        // 'msg' is the received Message from Telegram
+        // 'match' is the result of executing the regexp above on the text content
+        // of the message
+
+        console.log("openwallet", msg);
+        const chatId = msg.chat.id;
+        const isZh = msg.from.language_code === 'zh-hans';
+        // const resp = match[1]; // the captured "whatever"
+
+        const options = {
+            parse_mode: "HTML",
+            reply_markup: JSON.stringify({
+                inline_keyboard: [
+                    [ { text: isZh ? '打开钱包' : "Open Wallet", web_app: { url: wallet_url}} ]
+                ]
+            })
+        };
+        bot.sendMessage(chatId, isZh ? '打开钱包' : "Open Wallet", options);
     });
 
     if (process.env.NODE_ENV !== 'prod') {
@@ -166,21 +194,22 @@ export function loadBot() {
     bot.getMyCommands().then(result => console.log('getMyCommands', result));
     bot.getMe().then(result => console.log('getMe', result));
 
-    // const opts = [
-    //     { command: 'menu', description: 'Main Menu' },
-    //     { command: 'wallet', description: 'My Wallet' },
-    //     { command: 'deposit', description: 'Fiat Deposits' },
-    //     { command: 'settings', description: 'Settings' }
-    // ];
-    // bot.setMyCommands(opts).then(resp => console.assert(resp));
+    const opts = [
+        { command: 'menu', description: 'Main Menu' },
+        { command: 'wallet', description: 'My Wallet' },
+        { command: 'openwallet', description: 'Open Wallet' },
+        { command: 'deposit', description: 'Fiat Deposits' },
+        { command: 'settings', description: 'Settings' }
+    ];
+    bot.setMyCommands(opts).then(resp => console.log("setMyCommands", resp));
 
     return bot;
 }
 
 
-const showWallet = async (bot, chatId, name, isZh) => {
+const showWallet = async (bot, chatId, fromId, name, isZh) => {
     await new Promise(resolve => {
-        timeoutFetch(`https://wallet.crescentbase.com/api/v2/getAAddress?email=@TG@${chatId}`)
+        timeoutFetch(`https://wallet.crescentbase.com/api/v2/getAAddress?email=@TG@${fromId}`)
             .then(result => {
                 if (result.ret === 200 && result.data) {
                     console.log(result.data);
