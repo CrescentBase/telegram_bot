@@ -7,12 +7,13 @@ import {response} from "express";
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.NODE_ENV === 'prod' ? '6237078898:AAGbtiaaa2j65ntR8ft6e00wrk0GTx6_Xo4' : '5989728913:AAH9nq1jCSGmFt6uOZ5fzOUSIA0NmEDBimU';
+const host  = process.env.NODE_ENV === 'prod' ? 'https://tg.crescentbase.com' : 'https://tg2.crescentbase.com';
 
-const wallet_url = 'https://tg.crescentbase.com/index.html';
+const wallet_url = `${host}/index.html`;
 
-const settings_url = 'https://tg.crescentbase.com/index.html?type=setting';
+const settings_url = `${host}/index.html?type=setting`;
 
-const delete_wallet_url = 'https://tg.crescentbase.com/index.html?type=delete';
+const delete_wallet_url = `${host}/index.html?type=delete`;
 
 const deposits_url = 'https://global.transak.com/?apiKey=2bd8015d-d8e6-4972-bcca-22770dcbe595';
 
@@ -170,24 +171,22 @@ export function loadBot() {
         bot.sendMessage(chatId, isZh ? '打开钱包' : "Open Wallet", options);
     });
 
-    if (process.env.NODE_ENV !== 'prod') {
-        bot.onText(/\/delete/, (msg, match) => {
-            // 'msg' is the received Message from Telegram
-            // 'match' is the result of executing the regexp above on the text content
-            // of the message
+    bot.onText(/\/delete/, (msg, match) => {
+        // 'msg' is the received Message from Telegram
+        // 'match' is the result of executing the regexp above on the text content
+        // of the message
 
-            const chatId = msg.chat.id;
-            console.log("delete", msg);
-            const options = {
-                reply_markup: JSON.stringify({
-                    inline_keyboard: [
-                        [ { text: "delete wallet", web_app: { url: delete_wallet_url}} ]
-                    ]
-                })
-            };
-            bot.sendMessage(chatId, "delete", options);
-        });
-    }
+        const chatId = msg.chat.id;
+        console.log("delete", msg);
+        const options = {
+            reply_markup: JSON.stringify({
+                inline_keyboard: [
+                    [ { text: "delete wallet", web_app: { url: delete_wallet_url}} ]
+                ]
+            })
+        };
+        bot.sendMessage(chatId, "delete", options);
+    });
 
 
     // bot.getWebHookInfo().then(result => console.log('getWebHookInfo', result))
